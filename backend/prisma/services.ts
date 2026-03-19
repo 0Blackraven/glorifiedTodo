@@ -71,10 +71,10 @@ export const dbGetTasksByUser = (
     page?: number;
     limit?: number;
     status?: boolean;
-    search?: string;
+    title?: string;
   } = {},
 ) => {
-  const { page = 1, limit = 10, status, search } = options;
+  const { page = 1, limit = 10, status, title } = options;
   const skip = (page - 1) * limit;
 
   const where:TaskWhereInput = { userId };
@@ -83,9 +83,9 @@ export const dbGetTasksByUser = (
     where.completed = status;
   }
 
-  if (search) {
+  if (title) {
     where.title = {
-      contains: search,
+      contains: title,
       mode: "insensitive",
     };
   }
@@ -103,10 +103,10 @@ export const dbGetTasksCount = (
   userId: number,
   options: {
     status?: boolean;
-    search?: string;
+    title?: string;
   } = {},
 ) => {
-  const { status, search } = options;
+  const { status, title } = options;
 
   const where: TaskWhereInput = { userId };
 
@@ -114,9 +114,9 @@ export const dbGetTasksCount = (
     where.completed = status;
   }
 
-  if (search) {
+  if (title) {
     where.title = {
-      contains: search,
+      contains: title,
       mode: "insensitive",
     };
   }
