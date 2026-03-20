@@ -3,50 +3,57 @@ import { useState } from "react";
 import type { AuthMode } from "@/types";
 import LoginForm from "@/components/auth/LoginForm";
 import RegisterForm from "@/components/auth/RegisterForm";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { ListTodo } from "lucide-react";
 
 export default function AuthPage() {
   const [mode, setMode] = useState<AuthMode>("login");
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6">
+    <div className="min-h-screen flex items-center justify-center bg-[#FFF8F3] p-6">
+      {/* Decorative gradient blob */}
       <div
         className="fixed top-[-10rem] left-1/2 -translate-x-1/2 w-[40rem] h-[40rem] rounded-full pointer-events-none"
         style={{
-          background: "radial-gradient(circle, rgba(108,99,255,0.18) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(245,164,97,0.2) 0%, transparent 70%)",
         }}
       />
 
-      <Card className="w-full max-w-[420px] shadow-2xl relative z-10 border-muted">
-        <CardHeader className="text-center pb-6">
-          <div className="mx-auto inline-flex items-center justify-center w-12 h-12 rounded-[14px] bg-primary/10 border border-primary/20 mb-4">
-            <span className="text-2xl">✦</span>
+      <div className="w-full max-w-[420px] bg-white rounded-3xl shadow-xl shadow-[#E8864A]/5 border border-[#E7E5E4] relative z-10 overflow-hidden">
+        {/* Header */}
+        <div className="text-center pt-8 pb-6 px-8">
+          <div className="mx-auto w-12 h-12 rounded-xl bg-gradient-to-br from-[#F5A461] to-[#E8864A] flex items-center justify-center mb-4">
+            <ListTodo size={22} className="text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold">Glorified Todo</CardTitle>
-          <CardDescription className="text-sm mt-1">
+          <h1 className="text-xl font-bold text-[#1C1917]">Glorified Todo</h1>
+          <p className="text-sm text-[#A8A29E] mt-1">
             {mode === "login" ? "Welcome back" : "Create your account"}
-          </CardDescription>
-        </CardHeader>
+          </p>
+        </div>
 
-        <CardContent>
-          <div className="flex bg-muted/50 rounded-lg p-1 mb-6 border">
+        {/* Tab toggle */}
+        <div className="px-8">
+          <div className="flex bg-[#F5F5F4] rounded-xl p-1 mb-6">
             {(["login", "register"] as AuthMode[]).map((m) => (
-              <Button
+              <button
                 key={m}
-                variant={mode === m ? "default" : "ghost"}
-                size="sm"
                 onClick={() => setMode(m)}
-                className="flex-1 capitalize"
+                className={`flex-1 py-2 text-sm font-medium rounded-lg capitalize transition-all duration-200 cursor-pointer ${
+                  mode === m
+                    ? "bg-white text-[#1C1917] shadow-sm"
+                    : "text-[#A8A29E] hover:text-[#78716C]"
+                }`}
               >
                 {m}
-              </Button>
+              </button>
             ))}
           </div>
+        </div>
 
+        {/* Form */}
+        <div className="px-8 pb-8">
           {mode === "login" ? <LoginForm /> : <RegisterForm />}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

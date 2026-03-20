@@ -2,10 +2,9 @@
 import { useState, useEffect } from "react";
 import type { Task, FilterStatus } from "@/types";
 import Navbar from "@/components/layout/Navbar";
-import TaskToolbar from "@/components/tasks/TaskToolbar";
 import TaskList from "@/components/tasks/TaskList";
 import AddTaskForm from "@/components/tasks/AddTaskForm";
-import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 
 export default function DashboardPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -23,7 +22,7 @@ export default function DashboardPage() {
     return matchesFilter && matchesSearch;
   });
 
-  useEffect(() =>{
+  useEffect(() => {
     const token = localStorage.getItem("accessToken");
     fetch("http://localhost:8080/tasks", {
       headers: { "Authorization": `Bearer ${token}` }
@@ -35,14 +34,13 @@ export default function DashboardPage() {
         }
       })
       .catch(console.error);
-  },[])
+  }, [])
 
   useEffect(() => {
-  const interval = setInterval(() => {
-    setTime(new Date().getHours());
-  }, 60000*60); // every minute
-
-  return () => clearInterval(interval);
+    const interval = setInterval(() => {
+      setTime(new Date().getHours());
+    }, 60000 * 60);
+    return () => clearInterval(interval);
   }, []);
 
   const counts = {
@@ -61,7 +59,6 @@ export default function DashboardPage() {
       });
     } catch (err) {
       console.error(err);
-      // Revert optimism if failed
       setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)));
     }
   };
@@ -100,42 +97,61 @@ export default function DashboardPage() {
     }
   };
 
+  const greeting =
+    currentTime < 12 ? "Good Morning" : currentTime < 18 ? "Good Afternoon" : "Good Evening";
+
   return (
-    <div className="min-h-screen bg-background flex flex-row">
-      <Navbar>
-        <TaskToolbar
-          filter={filter}
-          onFilterChange={setFilter}
-          counts={counts}
-        />
+    <div className="min-h-screen bg-[#FFF8F3] flex flex-row">
+      {/* Sidebar */}
+      <Navbar
+        activeFilter={filter}
+        onFilterChange={(f) => setFilter(f as FilterStatus)}
+        counts={counts}
+      />
 
-      </Navbar>
-
-      <main className="flex-1 w-full mx-auto p-8 space-y-4 bg-amber-100">
-        <div className="border-2 rounded-sm w-[60%]">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder=  "Search tasks..."
-          className="flex w-full h-8 text-black p-2"
-        />
+      {/* Main Content */}
+      <main className="flex-1 px-4 sm:px-6 md:px-10 py-6 md:py-8 pt-[72px] md:pt-8 max-w-5xl w-full">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6 md:mb-8">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-[#1C1917] tracking-tight">
+              {greeting} 👋
+            </h1>
+            <p className="text-xs sm:text-sm text-[#A8A29E] mt-1">
+              {counts.active} active · {counts.done} completed
+            </p>
+          </div>
         </div>
 
-        <Button onClick={() => setShowForm(true)}>Add Task</Button>
-        <div className="mb-7">
-          <p className="text-4xl font-bold m-0 text-black">
-            Good {currentTime < 12 ? "Morning" : currentTime < 18 ? "Afternoon" : "Evening"}
-          </p>
-          <p className="text-m mt-1 mb-0 text-black ps-2">
-            {counts.active} remaining · {counts.done} completed
-          </p>
+        {/* Search */}
+        <div className="relative mb-5 md:mb-6">
+          <Search
+            size={16}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D6D3D1]"
+          />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search tasks..."
+            className="w-full pl-11 pr-4 py-2.5 md:py-3 bg-white rounded-2xl border border-[#E7E5E4] text-sm text-[#1C1917] placeholder:text-[#D6D3D1] outline-none focus:border-[#E8864A] focus:shadow-sm transition-all"
+          />
         </div>
 
+        {/* Add Task Form */}
         {showForm && (
-          <AddTaskForm onAdd={handleAdd} onCancel={() => setShowForm(false)} />
+          <div className="mb-5 md:mb-6">
+            <AddTaskForm onAdd={handleAdd} onCancel={() => setShowForm(false)} />
+          </div>
         )}
 
-        <TaskList tasks={filtered} onToggle={handleToggle} onDelete={handleDelete} />
+        {/* Task List */}
+        <TaskList
+          tasks={filtered}
+          onToggle={handleToggle}
+          onDelete={handleDelete}
+          onAddClick={() => setShowForm(true)}
+          showingForm={showForm}
+        />
       </main>
     </div>
   );
