@@ -15,6 +15,6 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     const token = req.headers.authorization?.split(" ")[1]
     if (token === undefined) return res.status(401).json({ error: "Token absent" })
     const user = jwt.verify(token, access_secret)
-    req.user = Number((user as JwtPayload).userId)
+    req.user = (user as JwtPayload).userId
     next()
 }

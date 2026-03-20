@@ -5,6 +5,7 @@ import Navbar from "@/components/layout/Navbar";
 import TaskToolbar from "@/components/tasks/TaskToolbar";
 import TaskList from "@/components/tasks/TaskList";
 import AddTaskForm from "@/components/tasks/AddTaskForm";
+import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -100,27 +101,35 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
-
-      <main className="flex-1 max-w-180 w-full mx-auto p-8">
-        <div className="mb-7">
-          <h1 className="text-2xl font-bold m-0 text-foreground">
-            Good {currentTime < 12 ? "Morning" : currentTime < 18 ? "Afternoon" : "Evening"}
-          </h1>
-          <p className="text-muted-foreground mt-1 mb-0 text-sm">
-            {counts.active} remaining · {counts.done} completed
-          </p>
-        </div>
-
+    <div className="min-h-screen bg-background flex flex-row">
+      <Navbar>
         <TaskToolbar
           filter={filter}
           onFilterChange={setFilter}
-          search={search}
-          onSearchChange={setSearch}
-          onAddClick={() => setShowForm((v) => !v)}
           counts={counts}
         />
+
+      </Navbar>
+
+      <main className="flex-1 w-full mx-auto p-8 space-y-4 bg-amber-100">
+        <div className="border-2 rounded-sm w-[60%]">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder=  "Search tasks..."
+          className="flex w-full h-8 text-black p-2"
+        />
+        </div>
+
+        <Button onClick={() => setShowForm(true)}>Add Task</Button>
+        <div className="mb-7">
+          <p className="text-4xl font-bold m-0 text-black">
+            Good {currentTime < 12 ? "Morning" : currentTime < 18 ? "Afternoon" : "Evening"}
+          </p>
+          <p className="text-m mt-1 mb-0 text-black ps-2">
+            {counts.active} remaining · {counts.done} completed
+          </p>
+        </div>
 
         {showForm && (
           <AddTaskForm onAdd={handleAdd} onCancel={() => setShowForm(false)} />

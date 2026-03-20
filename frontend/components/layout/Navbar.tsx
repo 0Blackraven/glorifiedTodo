@@ -1,31 +1,34 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Power } from "lucide-react";
 
-export default function Navbar() {
+export default function Navbar({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   const router = useRouter();
 
   return (
-    <header className="bg-background border-b border-border px-6 h-[60px] flex items-center justify-between sticky top-0 z-10">
-      <div className="flex items-center gap-2">
-        <span className="text-lg">✦</span>
-        <span className="font-bold text-base text-foreground">
+    <div className=" border-e-6 py-6 w-[18%] h-fill flex flex-col justify-between sticky left-0 z-10 px-6 ">
+      <div className="flex items-center gap-3">
+        <span className="text-5xl text-amber-900">✦</span>
+        <span className="font-bold text-2xl text-foreground">
           Glorified Todo
         </span>
       </div>
+      
+      {children}
 
-      <div className="flex items-center gap-4">
-        <span className="text-sm text-muted-foreground hidden sm:inline-block">
-          user@example.com
-        </span>
+      <div className="flex gap-4 justify-end">
         <Button
-          variant="outline"
-          size="sm"
           onClick={() => router.push("/auth")}
+          className= "w-15 h-9 cursor-pointer bg-amber-50"
         >
-          Logout
+          <Power className= "text-black"/>
         </Button>
       </div>
-    </header>
+    </div>
   );
 }
