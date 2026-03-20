@@ -6,18 +6,9 @@ import TaskToolbar from "@/components/tasks/TaskToolbar";
 import TaskList from "@/components/tasks/TaskList";
 import AddTaskForm from "@/components/tasks/AddTaskForm";
 
-const STALE_TASKS: Task[] = [
-  { id: 1, title: "Design the database schema", description: "Plan User, Task, and RefreshToken models in Prisma", completed: true, createdAt: "2026-03-18" },
-  { id: 2, title: "Build auth handlers", description: "Register, login, logout, and token refresh endpoints", completed: true, createdAt: "2026-03-19" },
-  { id: 3, title: "Build task handlers", description: "CRUD + toggle status for tasks", completed: true, createdAt: "2026-03-19" },
-  { id: 4, title: "Add auth middleware", description: "Verify refresh token and attach userId to req", completed: false, createdAt: "2026-03-20" },
-  { id: 5, title: "Wire up frontend to backend API", description: "Replace stale data with real fetch calls", completed: false, createdAt: "2026-03-20" },
-  { id: 6, title: "Add pagination to task list", description: "Use page and limit query params", completed: false, createdAt: "2026-03-20" },
-];
-
 export default function DashboardPage() {
-  const [tasks, setTasks] = useState<Task[]>(STALE_TASKS);
-  const [currentTime, setTime] = useState<number>(new Date().getHours());
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [currentTime, setTime] = useState<number>(() => new Date().getHours());
   const [filter, setFilter] = useState<FilterStatus>("all");
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -32,8 +23,26 @@ export default function DashboardPage() {
   });
 
   useEffect(() =>{
-    setTime(new Date().getHours());
+    const token = localStorage.getItem("accessToken");
+    fetch("http://localhost:8080/tasks", {
+      headers: { "Authorization": `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.tasks) {
+          setTasks(data.tasks);
+        }
+      })
+      .catch(console.error);
   },[])
+
+  useEffect(() => {
+  const interval = setInterval(() => {
+    setTime(new Date().getHours());
+  }, 60000*60); // every minute
+
+  return () => clearInterval(interval);
+  }, []);
 
   const counts = {
     all: tasks.length,
@@ -41,31 +50,60 @@ export default function DashboardPage() {
     done: tasks.filter((t) => t.completed).length,
   };
 
-  const handleToggle = (id: number) => {
+  const handleToggle = async (id: number) => {
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)));
+    try {
+      const token = localStorage.getItem("accessToken");
+      await fetch(`http://localhost:8080/tasks/${id}/toggle`, { 
+        method: "PATCH",
+        headers: { "Authorization": `Bearer ${token}` } 
+      });
+    } catch (err) {
+      console.error(err);
+      // Revert optimism if failed
+      setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)));
+    }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
+    const backup = [...tasks];
     setTasks((prev) => prev.filter((t) => t.id !== id));
+    try {
+      const token = localStorage.getItem("accessToken");
+      await fetch(`http://localhost:8080/tasks/${id}`, { 
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` } 
+      });
+    } catch (err) {
+      console.error(err);
+      setTasks(backup);
+    }
   };
 
-  const handleAdd = (title: string, description?: string) => {
-    const newTask: Task = {
-      id: Date.now(),
-      title,
-      description,
-      completed: false,
-      createdAt: new Date().toISOString().split("T")[0],
-    };
-    setTasks((prev) => [newTask, ...prev]);
-    setShowForm(false);
+  const handleAdd = async (title: string, description?: string) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch("http://localhost:8080/tasks", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` 
+        },
+        body: JSON.stringify({ title, description }),
+      });
+      const data = await res.json();
+      if (data.task) setTasks((prev) => [data.task, ...prev]);
+      setShowForm(false);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      <main className="flex-1 max-w-[720px] w-full mx-auto p-8">
+      <main className="flex-1 max-w-180 w-full mx-auto p-8">
         <div className="mb-7">
           <h1 className="text-2xl font-bold m-0 text-foreground">
             Good {currentTime < 12 ? "Morning" : currentTime < 18 ? "Afternoon" : "Evening"}

@@ -1,4 +1,5 @@
-import type { Request, Response } from "express";
+import type { Response } from "express";
+import type { AuthRequest } from "../middleware.ts";
 import {
     dbGetTasksByUser,
     dbCreateTask,
@@ -6,9 +7,9 @@ import {
     dbUpdateTask,
     dbToggleTaskStatus,
     dbDeleteTask,
-} from "../prisma/services";
+} from "../prisma/services.ts";
 
-export const getTasks = async (req: Request, res: Response) => {
+export const getTasks = async (req: AuthRequest, res: Response) => {
     if ((req.query.page !== undefined && isNaN(Number(req.query.page))) ||
         (req.query.limit !== undefined && isNaN(Number(req.query.limit)))) {
         return res.status(400).json("Invalid queris")
@@ -18,7 +19,7 @@ export const getTasks = async (req: Request, res: Response) => {
     const limit = req.query.limit !== undefined ? Number(req.query.limit) : undefined;
     const status = req.query.status !== undefined ? req.query.status === "true" : undefined;
     const title = req.query.title?.toString() || undefined
-    const userId = req.body.userId
+    const userId = req.user
     try {
         const tasks = await dbGetTasksByUser(userId, { page, limit, status, title });
         return res.status(200).json({ tasks });
@@ -27,8 +28,8 @@ export const getTasks = async (req: Request, res: Response) => {
     }
 }
 
-export const createTask = async (req: Request, res: Response) => {
-    const userId = req.body.userId
+export const createTask = async (req: AuthRequest, res: Response) => {
+    const userId = req.user
     const { title, description }: { title: string; description?: string } = req.body
 
     if (!title) return res.status(400).json({ error: "Title not provided" })
@@ -41,9 +42,9 @@ export const createTask = async (req: Request, res: Response) => {
     }
 }
 
-export const getTaskById = async (req: Request, res: Response) => {
+export const getTaskById = async (req: AuthRequest, res: Response) => {
     const taskId = Number(req.params.id)
-    const userId = req.body.userId
+    const userId = req.user
 
     if (isNaN(taskId)) return res.status(400).json({ error: "Invalid task id" })
 
@@ -56,9 +57,9 @@ export const getTaskById = async (req: Request, res: Response) => {
     }
 }
 
-export const updateTask = async (req: Request, res: Response) => {
+export const updateTask = async (req: AuthRequest, res: Response) => {
     const taskId = Number(req.params.id)
-    const userId = req.body.userId
+    const userId = req.user
     const { title, description }: { title?: string; description?: string } = req.body
 
     if (isNaN(taskId)) return res.status(400).json({ error: "Invalid task id" })
@@ -73,9 +74,9 @@ export const updateTask = async (req: Request, res: Response) => {
     }
 }
 
-export const toggleStatus = async (req: Request, res: Response) => {
+export const toggleStatus = async (req: AuthRequest, res: Response) => {
     const taskId = Number(req.params.id)
-    const userId = req.body.userId
+    const userId = req.user
 
     if (isNaN(taskId)) return res.status(400).json({ error: "Invalid task id" })
 
@@ -88,9 +89,9 @@ export const toggleStatus = async (req: Request, res: Response) => {
     }
 }
 
-export const deleteTask = async (req: Request, res: Response) => {
+export const deleteTask = async (req: AuthRequest, res: Response) => {
     const taskId = Number(req.params.id)
-    const userId = req.body.userId
+    const userId = req.user
 
     if (isNaN(taskId)) return res.status(400).json({ error: "Invalid task id" })
 

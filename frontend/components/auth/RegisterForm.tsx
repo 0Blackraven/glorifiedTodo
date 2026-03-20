@@ -10,9 +10,28 @@ export default function RegisterForm() {
   const [confirm, setConfirm] = useState("");
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/myspace");
+    if (password !== confirm) return alert("Passwords don't match");
+    try {
+      const res = await fetch("http://localhost:8080/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Something went wrong");
+        return;
+      }
+      if (data.accessToken) {
+        localStorage.setItem("accessToken", data.accessToken);
+      }
+      router.push("/myspace");
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
