@@ -139,14 +139,14 @@ export const dbCreateTask = (
 };
 
 
-export const dbGetTaskById = (taskId: number, userId: number) => {
+export const dbGetTaskById = (taskId: string, userId: number) => {
   return prisma.task.findFirst({
     where: { id: taskId, userId },
   });
 };
 
 export const dbUpdateTask = (
-  taskId: number,
+  taskId: string,
   userId: number,
   data: { title?: string; description?: string },
 ) => {
@@ -156,7 +156,7 @@ export const dbUpdateTask = (
   });
 };
 
-export const dbToggleTaskStatus = async (taskId: number, userId: number) => {
+export const dbToggleTaskStatus = async (taskId: string, userId: number) => {
   const task = await prisma.task.findFirst({
     where: { id: taskId, userId },
     select: { completed: true },
@@ -170,7 +170,7 @@ export const dbToggleTaskStatus = async (taskId: number, userId: number) => {
   });
 };
 
-export const dbDeleteTask = (taskId: number, userId: number) => {
+export const dbDeleteTask = (taskId: string, userId: number) => {
   return prisma.task.deleteMany({
     where: { id: taskId, userId },
   });

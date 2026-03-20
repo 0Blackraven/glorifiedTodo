@@ -33,3 +33,11 @@ export const invalidateUserCache = async (userId: number) => {
         console.error("Redis Invalidate Error:", err)
     }
 }
+
+export const pushToTaskQueue = async (action: string, payload: any) => {
+    try {
+        await client.lPush("task_operations_queue", JSON.stringify({ action, payload }))
+    } catch(err) {
+        console.error("Redis Queue Push Error:", err)
+    }
+}

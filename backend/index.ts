@@ -5,6 +5,7 @@ import taskRouter from "./tasks/routes.ts";
 import { userRouter } from "./auth/routes.ts";
 import cors from "cors"
 import cookieParser from "cookie-parser"
+import { startTaskWorker } from "./redis/worker.ts"
 
 
 dotenv.config()
@@ -26,6 +27,8 @@ app.use("/auth", userRouter)
 const server = createServer(app)
 
 const port = process.env.PORT || "8080"
+
+startTaskWorker()
 
 server.listen(8080, ()=> {
     console.log(`listening to ${port}`)
